@@ -221,8 +221,8 @@ class ExactIHVP(InverseHessianVectorProduct):
                 grads = self.model.batch_jacobian_tensor(batch) # pylint: disable=W0212
 
             curr_hess = tape_hess.jacobian(
-                    grads, weights
-                    )
+                grads, weights, unconnected_gradients='zero'
+            )
 
             curr_hess = [tf.reshape(h, shape=(len(grads), self.model.nb_params, -1)) for h in curr_hess]
             curr_hess = tf.concat(curr_hess, axis=-1)
@@ -413,8 +413,8 @@ class ForwardOverBackwardHVP:
             with tf.GradientTape(persistent=False, watch_accessed_variables=False) as tape:
                 tape.watch(self.weights)
                 loss = self.model.loss_function(y_hessian_current, self.model(feature_maps_hessian_current))
-            backward = tape.jacobian(loss, self.weights)
-        hessian_vector_product = acc.jvp(backward)
+            backward = tape.jacobian(loss, self.weights, unconnected_gradients='zero')
+        hessian_vector_product = acc.jvp(backward, unconnected_gradients='zero')
 
         hvp = [tf.reshape(hessian_vp, shape=(-1,)) for hessian_vp in hessian_vector_product]
         hvp = tf.concat(hvp, axis=0)

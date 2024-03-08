@@ -172,7 +172,7 @@ class BaseInfluenceModel:
             tape.watch(weights)
             y_pred = loss_function(y_true, model(model_inp), sample_weight)
 
-        jacobian = tape.jacobian(y_pred, weights)
+        jacobian = tape.jacobian(y_pred, weights, unconnected_gradients='zero')
 
         jacobian = [tf.reshape(j, (batch_size, -1,)) for j in jacobian]
         jacobian = tf.concat(jacobian, axis=1)
